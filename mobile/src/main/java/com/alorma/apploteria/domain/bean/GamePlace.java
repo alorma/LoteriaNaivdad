@@ -1,9 +1,21 @@
 package com.alorma.apploteria.domain.bean;
 
+import com.afollestad.inquiry.annotations.Column;
+import com.afollestad.inquiry.annotations.Table;
+
+@Table(name = "GamePlace")
 public class GamePlace {
-  private String name;
-  private double latitude;
-  private double longitude;
+
+  @Column(name = "_id", primaryKey = true, notNull = true, autoIncrement = true) public long id;
+
+  @Column public String name;
+
+  @Column public double latitude;
+
+  @Column public double longitude;
+
+  @Column
+  public long gamePartId;
 
   public String getName() {
     return name;

@@ -2,6 +2,7 @@ package com.alorma.apploteria.domain.datasource;
 
 import com.afollestad.inquiry.Inquiry;
 import com.alorma.apploteria.domain.bean.Game;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import rx.Observable;
@@ -22,7 +23,7 @@ public class SqlGamesDataSource implements GamesDatasource, AddGameDatasource {
       } else {
         return Observable.empty();
       }
-    }).map(Arrays::asList);
+    }).map(Arrays::asList).switchIfEmpty(Observable.just(new ArrayList<>()));
   }
 
   @Override
@@ -32,7 +33,7 @@ public class SqlGamesDataSource implements GamesDatasource, AddGameDatasource {
         Long[] insertedIds = database.insert(Game.class).values(game).run();
         return Observable.just(insertedIds != null && insertedIds.length > 0);
       } catch (Exception e) {
-        return Observable.just(false);
+        return Observable.empty();
       }
     });
   }

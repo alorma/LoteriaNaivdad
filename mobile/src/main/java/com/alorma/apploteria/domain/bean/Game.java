@@ -1,6 +1,7 @@
 package com.alorma.apploteria.domain.bean;
 
 import com.afollestad.inquiry.annotations.Column;
+import com.afollestad.inquiry.annotations.ForeignKey;
 import com.afollestad.inquiry.annotations.Table;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class Game {
   @Column
   public int color;
 
+  @ForeignKey(tableName = "GamePart", foreignColumnName = "gameId")
   private List<GamePart> parts;
 
   public Game() {

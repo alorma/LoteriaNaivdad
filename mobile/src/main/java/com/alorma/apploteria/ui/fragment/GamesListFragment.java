@@ -14,6 +14,7 @@ import com.afollestad.inquiry.Inquiry;
 import com.alorma.apploteria.R;
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.bean.GamePart;
+import com.alorma.apploteria.domain.bean.GamePlace;
 import com.alorma.apploteria.inject.component.ApplicationComponent;
 import com.alorma.apploteria.inject.module.GamesModule;
 import com.alorma.apploteria.ui.presenter.impl.GamesListPresenter;
@@ -76,8 +77,15 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
     game.setParts(new ArrayList<>());
     GamePart gamePart = new GamePart();
     gamePart.setTitle("Loteria del curro");
-    gamePart.setAmount(20.0);
+    gamePart.setAmount(25.0);
     gamePart.setCurrency("€");
+
+    GamePlace place = new GamePlace();
+    place.setLatitude(41.2);
+    place.setLongitude(2.1);
+    place.setName("Curro");
+    gamePart.setPlace(place);
+
     game.getParts().add(gamePart);
     return game;
   }

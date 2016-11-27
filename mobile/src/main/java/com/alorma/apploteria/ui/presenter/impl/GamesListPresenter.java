@@ -14,16 +14,15 @@ public class GamesListPresenter extends BaseRxPresenter<Void, List<Game>, View<L
 
   public GamesListPresenter(UseCase<Void, List<Game>> getItemsUseCase, UseCase<Game, Boolean> addGameUseCase, Scheduler ioScheduler,
       Scheduler mainScheduler) {
-    super(ioScheduler, mainScheduler, getItemsUseCase);
+    super(mainScheduler, ioScheduler, getItemsUseCase);
     this.getItemsUseCase = getItemsUseCase;
     this.addGameUseCase = addGameUseCase;
   }
 
   public void addGame(Game game) {
-    Observable<List<Game>> listObservable = addGameUseCase.execute(game)
-        .subscribeOn(ioScheduler)
-        .observeOn(mainScheduler)
-        .flatMap(aBoolean -> aBoolean ? getItemsUseCase.execute(null) : Observable.error(new Exception()));
+    Observable<List<Game>> listObservable =
+        addGameUseCase.execute(game)
+            .flatMap(aBoolean -> aBoolean ? getItemsUseCase.execute(null) : Observable.error(new Exception()));
 
     subscribe(listObservable);
   }

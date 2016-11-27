@@ -1,10 +1,31 @@
 package com.alorma.apploteria.domain.bean;
 
+import com.afollestad.inquiry.annotations.Column;
+import com.afollestad.inquiry.annotations.ForeignKey;
+import com.afollestad.inquiry.annotations.Table;
+
+@Table(name = "GamePart")
 public class GamePart {
-  private String title;
-  private double amount;
-  private String description;
-  private String currency;
+
+  @Column(name = "_id", primaryKey = true, notNull = true, autoIncrement = true)
+  public long id;
+
+  @Column
+  public String title;
+
+  @Column
+  public double amount;
+
+  @Column
+  public String description;
+
+  @Column
+  public String currency;
+
+  @Column
+  public long gameId;
+
+  @ForeignKey(tableName = "GamePlace", foreignColumnName = "gamePartId")
   private GamePlace place;
 
   public String getTitle() {
@@ -45,5 +66,13 @@ public class GamePart {
 
   public void setPlace(GamePlace place) {
     this.place = place;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
   }
 }
