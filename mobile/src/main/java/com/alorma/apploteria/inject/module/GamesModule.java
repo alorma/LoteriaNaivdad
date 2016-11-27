@@ -1,9 +1,10 @@
 package com.alorma.apploteria.inject.module;
 
+import com.afollestad.inquiry.Inquiry;
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.datasource.AddGameDatasource;
 import com.alorma.apploteria.domain.datasource.GamesDatasource;
-import com.alorma.apploteria.domain.datasource.InMemoryDataSource;
+import com.alorma.apploteria.domain.datasource.SqlGamesDataSource;
 import com.alorma.apploteria.domain.repository.AddGameRepository;
 import com.alorma.apploteria.domain.repository.GetGamesRepository;
 import com.alorma.apploteria.domain.repository.Repository;
@@ -21,22 +22,25 @@ import rx.Scheduler;
 
 @Module public class GamesModule {
 
-  private InMemoryDataSource inMemoryDataSource;
+  private GamesDatasource gamesDatasource;
+  private AddGameDatasource addGameDatasource;
 
-  public GamesModule() {
-    inMemoryDataSource = new InMemoryDataSource();
+  public GamesModule(Inquiry database) {
+    SqlGamesDataSource dataSource = new SqlGamesDataSource(database);
+    gamesDatasource = dataSource;
+    addGameDatasource = dataSource;
   }
 
   @Provides
   @PerActivity
   GamesDatasource getGamesDatasource() {
-    return inMemoryDataSource;
+    return gamesDatasource;
   }
 
   @Provides
   @PerActivity
   AddGameDatasource getAddGameDatasource() {
-    return inMemoryDataSource;
+    return addGameDatasource;
   }
 
   @Provides

@@ -1,11 +1,26 @@
 package com.alorma.apploteria.domain.bean;
 
+import com.afollestad.inquiry.annotations.Column;
+import com.afollestad.inquiry.annotations.Table;
 import java.util.List;
 
+@Table
 public class Game {
-  private String number;
-  private int color;
+
+  @Column(name = "_id", primaryKey = true, notNull = true, autoIncrement = true)
+  public long id;
+
+  @Column(notNull = true)
+  public String number;
+
+  @Column
+  public int color;
+
   private List<GamePart> parts;
+
+  public Game() {
+
+  }
 
   public String getNumber() {
     return number;
@@ -29,5 +44,13 @@ public class Game {
 
   public void setParts(List<GamePart> parts) {
     this.parts = parts;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
   }
 }

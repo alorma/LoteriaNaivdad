@@ -10,6 +10,7 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.afollestad.inquiry.Inquiry;
 import com.alorma.apploteria.R;
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.bean.GamePart;
@@ -25,11 +26,15 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
   @Inject GamesListPresenter gamesListPresenter;
 
   @BindView(R.id.text) TextView textView;
+  private Inquiry database;
 
   @Override
   protected void injectComponents(ApplicationComponent applicationComponent) {
     super.injectComponents(applicationComponent);
-    applicationComponent.plus(new GamesModule()).inject(this);
+
+    database = Inquiry.newInstance(getContext().getApplicationContext(), "GAMES").build();
+
+    applicationComponent.plus(new GamesModule(database)).inject(this);
   }
 
   @Nullable
@@ -61,10 +66,10 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
 
   @OnClick(R.id.button)
   public void onButtonClick() {
-    gamesListPresenter.addGame(geerateRandomGame());
+    gamesListPresenter.addGame(generateRandomGame());
   }
 
-  private Game geerateRandomGame() {
+  private Game generateRandomGame() {
     Game game = new Game();
     game.setColor(Color.CYAN);
     game.setNumber("89891");
@@ -85,6 +90,15 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
   @Override
   public void hideLoading() {
 
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+
+    if (getActivity() != null && getActivity().isFinishing()) {
+      database.destroyInstance();
+    }
   }
 
   @Override
