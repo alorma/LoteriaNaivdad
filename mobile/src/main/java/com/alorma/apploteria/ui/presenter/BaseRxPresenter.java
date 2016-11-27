@@ -35,16 +35,15 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
   public void execute(REQUEST request) {
     if (!isViewAttached()) return;
 
-    subscribe(useCase.execute(request), false);
+    subscribe(useCase.execute(request));
   }
 
   /**
    * Creates internal subscriber and attaches it to observable argument.
+   *  @param observable the object to subscribe
    *
-   * @param observable the object to subscribe
-   * @param isFromPaginated indicates that request is paginated or not
    */
-  protected void subscribe(Observable<RESPONSE> observable, boolean isFromPaginated) {
+  protected void subscribe(Observable<RESPONSE> observable) {
     if (!isViewAttached()) return;
 
     getView().showLoading();
@@ -64,7 +63,7 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
 
       @Override
       public void onNext(RESPONSE response) {
-        BaseRxPresenter.this.onNext(response, isFromPaginated);
+        BaseRxPresenter.this.onNext(response);
       }
     };
 
@@ -99,7 +98,7 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
     unsubscribe();
   }
 
-  protected void onNext(RESPONSE response, boolean isFromPaginated) {
+  protected void onNext(RESPONSE response) {
     if (isViewAttached()) {
       getView().onDataReceived(response);
     }

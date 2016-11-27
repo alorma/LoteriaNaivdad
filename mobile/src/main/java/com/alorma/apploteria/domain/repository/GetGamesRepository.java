@@ -1,7 +1,7 @@
 package com.alorma.apploteria.domain.repository;
 
-import com.alorma.apploteria.domain.GamesDatasource;
 import com.alorma.apploteria.domain.bean.Game;
+import com.alorma.apploteria.domain.datasource.GamesDatasource;
 import java.util.List;
 import rx.Observable;
 

@@ -1,19 +1,22 @@
 package com.alorma.apploteria.ui.fragment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import com.alorma.apploteria.R;
 import com.alorma.apploteria.domain.bean.Game;
+import com.alorma.apploteria.domain.bean.GamePart;
 import com.alorma.apploteria.inject.component.ApplicationComponent;
 import com.alorma.apploteria.inject.module.GamesModule;
 import com.alorma.apploteria.ui.presenter.impl.GamesListPresenter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
@@ -54,6 +57,24 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
   public void onStop() {
     gamesListPresenter.detachView();
     super.onStop();
+  }
+
+  @OnClick(R.id.button)
+  public void onButtonClick() {
+    gamesListPresenter.addGame(geerateRandomGame());
+  }
+
+  private Game geerateRandomGame() {
+    Game game = new Game();
+    game.setColor(Color.CYAN);
+    game.setNumber("89891");
+    game.setParts(new ArrayList<>());
+    GamePart gamePart = new GamePart();
+    gamePart.setTitle("Loteria del curro");
+    gamePart.setAmount(20.0);
+    gamePart.setCurrency("€");
+    game.getParts().add(gamePart);
+    return game;
   }
 
   @Override

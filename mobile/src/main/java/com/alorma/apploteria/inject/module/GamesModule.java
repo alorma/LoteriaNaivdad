@@ -1,11 +1,13 @@
 package com.alorma.apploteria.inject.module;
 
-import android.graphics.Color;
-import com.alorma.apploteria.domain.GamesDatasource;
 import com.alorma.apploteria.domain.bean.Game;
-import com.alorma.apploteria.domain.bean.GamePart;
+import com.alorma.apploteria.domain.datasource.AddGameDatasource;
+import com.alorma.apploteria.domain.datasource.GamesDatasource;
+import com.alorma.apploteria.domain.datasource.InMemoryDataSource;
+import com.alorma.apploteria.domain.repository.AddGameRepository;
 import com.alorma.apploteria.domain.repository.GetGamesRepository;
 import com.alorma.apploteria.domain.repository.Repository;
+import com.alorma.apploteria.domain.usecase.AddGameUseCase;
 import com.alorma.apploteria.domain.usecase.GetGamesUseCase;
 import com.alorma.apploteria.domain.usecase.UseCase;
 import com.alorma.apploteria.inject.named.IOScheduler;
@@ -14,44 +16,27 @@ import com.alorma.apploteria.inject.scope.PerActivity;
 import com.alorma.apploteria.ui.presenter.impl.GamesListPresenter;
 import dagger.Module;
 import dagger.Provides;
-import java.util.ArrayList;
 import java.util.List;
-import rx.Observable;
 import rx.Scheduler;
 
 @Module public class GamesModule {
 
+  private InMemoryDataSource inMemoryDataSource;
+
+  public GamesModule() {
+    inMemoryDataSource = new InMemoryDataSource();
+  }
+
   @Provides
   @PerActivity
   GamesDatasource getGamesDatasource() {
-    return () -> {
-      List<Game> gameList = new ArrayList<>();
+    return inMemoryDataSource;
+  }
 
-      Game game1 = new Game();
-      game1.setColor(Color.CYAN);
-      game1.setNumber("89891");
-      game1.setParts(new ArrayList<>());
-      GamePart gamePart1 = new GamePart();
-      gamePart1.setTitle("Loteria del curro");
-      gamePart1.setAmount(20.0);
-      gamePart1.setCurrency("€");
-      game1.getParts().add(gamePart1);
-
-      gameList.add(game1);
-
-      Game game2 = new Game();
-      game2.setColor(Color.GREEN);
-      game2.setNumber("71891");
-      game2.setParts(new ArrayList<>());
-      GamePart gamePart2 = new GamePart();
-      gamePart2.setTitle("Loteria del curro");
-      gamePart2.setAmount(20.0);
-      gamePart2.setCurrency("€");
-      game2.getParts().add(gamePart2);
-      gameList.add(game2);
-
-      return Observable.just(gameList);
-    };
+  @Provides
+  @PerActivity
+  AddGameDatasource getAddGameDatasource() {
+    return inMemoryDataSource;
   }
 
   @Provides
@@ -62,14 +47,26 @@ import rx.Scheduler;
 
   @Provides
   @PerActivity
+  Repository<Game, Boolean> getAddGameRepository(AddGameDatasource datasource) {
+    return new AddGameRepository(datasource);
+  }
+
+  @Provides
+  @PerActivity
   UseCase<Void, List<Game>> provideGetGamesUseCase(Repository<Void, List<Game>> repository) {
     return new GetGamesUseCase(repository);
   }
 
   @Provides
   @PerActivity
-  GamesListPresenter getGamesListPresenter(UseCase<Void, List<Game>> useCase, @IOScheduler Scheduler ioScheduler,
-      @MainScheduler Scheduler mainScheduler) {
-    return new GamesListPresenter(useCase, ioScheduler, mainScheduler);
+  UseCase<Game, Boolean> getAddGameUseCase(Repository<Game, Boolean> repository) {
+    return new AddGameUseCase(repository);
+  }
+
+  @Provides
+  @PerActivity
+  GamesListPresenter getGamesListPresenter(UseCase<Void, List<Game>> getGamesUseCase, UseCase<Game, Boolean> addGameUseCase,
+      @IOScheduler Scheduler ioScheduler, @MainScheduler Scheduler mainScheduler) {
+    return new GamesListPresenter(getGamesUseCase, addGameUseCase, ioScheduler, mainScheduler);
   }
 }
