@@ -12,11 +12,11 @@ import rx.Scheduler;
 
 public class GamesListPresenter extends BaseRxPresenter<Void, List<Game>, View<List<Game>>> {
   private UseCase<Void, List<Game>> getItemsUseCase;
-  private UseCase<Game, Boolean> addGameUseCase;
-  private CompletableUseCase removeGameUseCase;
+  private CompletableUseCase<Game> addGameUseCase;
+  private CompletableUseCase<Void> removeGameUseCase;
 
-  public GamesListPresenter(UseCase<Void, List<Game>> getItemsUseCase, UseCase<Game, Boolean> addGameUseCase,
-      CompletableUseCase removeGameUseCase, Scheduler ioScheduler, Scheduler mainScheduler) {
+  public GamesListPresenter(UseCase<Void, List<Game>> getItemsUseCase, CompletableUseCase<Game> addGameUseCase,
+      CompletableUseCase<Void> removeGameUseCase, Scheduler ioScheduler, Scheduler mainScheduler) {
     super(mainScheduler, ioScheduler, getItemsUseCase);
     this.getItemsUseCase = getItemsUseCase;
     this.addGameUseCase = addGameUseCase;
@@ -25,15 +25,13 @@ public class GamesListPresenter extends BaseRxPresenter<Void, List<Game>, View<L
   }
 
   public void addGame(Game game) {
-    Observable<List<Game>> observable = getItemsUseCase.execute(null);
-    Observable<List<Game>> fallbackObservable = Observable.error(new Exception());
-    Observable<List<Game>> listObservable = addGameUseCase.execute(game).flatMap(aBoolean -> aBoolean ? observable : fallbackObservable);
+    Observable<List<Game>> listObservable = addGameUseCase.execute(game).andThen(getItemsUseCase.execute(null));
 
     subscribe(listObservable);
   }
 
   public void removeAllGames() {
-    Observable<List<Game>> listObservable = removeGameUseCase.execute().andThen(getItemsUseCase.execute(null));
+    Observable<List<Game>> listObservable = removeGameUseCase.execute(null).andThen(getItemsUseCase.execute(null));
 
     subscribe(listObservable);
   }

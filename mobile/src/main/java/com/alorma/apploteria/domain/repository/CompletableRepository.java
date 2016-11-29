@@ -2,8 +2,8 @@ package com.alorma.apploteria.domain.repository;
 
 import rx.Completable;
 
-public interface CommpletableRepository {
+public interface CompletableRepository<K> {
 
-  Completable execute();
+  Completable execute(K k);
 
 }

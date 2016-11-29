@@ -1,17 +1,17 @@
 package com.alorma.apploteria.domain.usecase;
 
-import com.alorma.apploteria.domain.repository.CommpletableRepository;
+import com.alorma.apploteria.domain.repository.CompletableRepository;
 import rx.Completable;
 
-public class CompletableUseCase {
+public class CompletableUseCase<K> {
 
-  private CommpletableRepository repository;
+  private CompletableRepository<K> repository;
 
-  public CompletableUseCase(CommpletableRepository repository) {
+  public CompletableUseCase(CompletableRepository<K> repository) {
     this.repository = repository;
   }
 
-  public Completable execute() {
-    return repository.execute();
+  public Completable execute(K k) {
+    return repository.execute(k);
   }
 }

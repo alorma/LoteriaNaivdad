@@ -2,9 +2,10 @@ package com.alorma.apploteria.domain.repository;
 
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.datasource.AddGameDataSource;
+import rx.Completable;
 import rx.Observable;
 
-public class AddGameRepository implements Repository<Game, Boolean> {
+public class AddGameRepository implements CompletableRepository<Game> {
   private AddGameDataSource datasource;
 
   public AddGameRepository(AddGameDataSource datasource) {
@@ -12,7 +13,7 @@ public class AddGameRepository implements Repository<Game, Boolean> {
   }
 
   @Override
-  public Observable<Boolean> execute(Game game) {
+  public Completable execute(Game game) {
     return datasource.addGame(game);
   }
 }

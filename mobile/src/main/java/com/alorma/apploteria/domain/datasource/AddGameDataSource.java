@@ -1,8 +1,8 @@
 package com.alorma.apploteria.domain.datasource;
 
 import com.alorma.apploteria.domain.bean.Game;
-import rx.Observable;
+import rx.Completable;
 
 public interface AddGameDataSource {
-  Observable<Boolean> addGame(Game game);
+  Completable addGame(Game game);
 }

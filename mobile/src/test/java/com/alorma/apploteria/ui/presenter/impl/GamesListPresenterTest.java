@@ -7,13 +7,12 @@ import com.alorma.apploteria.domain.datasource.AddGameDataSource;
 import com.alorma.apploteria.domain.datasource.GetGamesDataSource;
 import com.alorma.apploteria.domain.datasource.RemoveGamesDataSource;
 import com.alorma.apploteria.domain.repository.AddGameRepository;
-import com.alorma.apploteria.domain.repository.CommpletableRepository;
+import com.alorma.apploteria.domain.repository.CompletableRepository;
 import com.alorma.apploteria.domain.repository.GetGamesRepository;
 import com.alorma.apploteria.domain.repository.RemoveAllGamesRepository;
 import com.alorma.apploteria.domain.repository.Repository;
 import com.alorma.apploteria.domain.usecase.CompletableUseCase;
 import com.alorma.apploteria.domain.usecase.UseCase;
-import com.alorma.apploteria.domain.usecase.impl.AddGameUseCase;
 import com.alorma.apploteria.domain.usecase.impl.GetGamesUseCase;
 import com.alorma.apploteria.ui.presenter.View;
 import java.util.ArrayList;
@@ -39,8 +38,8 @@ public class GamesListPresenterTest {
   private static final Scheduler MAIN_SCHEDULER = Schedulers.trampoline();
 
   @Mock UseCase<Void, List<Game>> getItemsUseCase;
-  @Mock UseCase<Game, Boolean> addGamesUseCase;
-  @Mock CompletableUseCase removeGamesUseCase;
+  @Mock CompletableUseCase<Game> addGamesUseCase;
+  @Mock CompletableUseCase<Void> removeGamesUseCase;
 
   @Mock View<List<Game>> view;
 
@@ -140,7 +139,6 @@ public class GamesListPresenterTest {
     gamesListPresenter.addGame(getNewGame());
     gamesListPresenter.addGame(getNewGame());
 
-
     gamesListPresenter.removeAllGames();
 
     verify(view).onDataEmpty();
@@ -152,11 +150,11 @@ public class GamesListPresenterTest {
     Repository<Void, List<Game>> getGamesRepository = new GetGamesRepository(ds);
     UseCase<Void, List<Game>> getAllItemsUseCase = new GetGamesUseCase(getGamesRepository);
 
-    Repository<Game, Boolean> addGamesRepository = new AddGameRepository(ds);
-    UseCase<Game, Boolean> addNewItemUseCase = new AddGameUseCase(addGamesRepository);
+    CompletableRepository<Game> addGamesRepository = new AddGameRepository(ds);
+    CompletableUseCase<Game> addNewItemUseCase = new CompletableUseCase<>(addGamesRepository);
 
-    CommpletableRepository removeAllItemsRepository = new RemoveAllGamesRepository(ds);
-    CompletableUseCase removeAllGamesUseCase = new CompletableUseCase(removeAllItemsRepository);
+    CompletableRepository<Void> removeAllItemsRepository = new RemoveAllGamesRepository(ds);
+    CompletableUseCase<Void> removeAllGamesUseCase = new CompletableUseCase<>(removeAllItemsRepository);
     GamesListPresenter presenter =
         new GamesListPresenter(getAllItemsUseCase, addNewItemUseCase, removeAllGamesUseCase, IO_SCHEDULER, MAIN_SCHEDULER);
 
@@ -174,8 +172,8 @@ public class GamesListPresenterTest {
     }
 
     @Override
-    public Observable<Boolean> addGame(Game game) {
-      return Observable.just(this.games.add(game));
+    public Completable addGame(Game game) {
+      return Completable.fromAction(() -> this.games.add(game));
     }
 
     @Override
