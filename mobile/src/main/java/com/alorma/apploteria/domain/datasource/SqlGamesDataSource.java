@@ -1,13 +1,14 @@
 package com.alorma.apploteria.domain.datasource;
 
 import com.afollestad.inquiry.Inquiry;
+import com.alorma.apploteria.domain.ResourceCleanUp;
 import com.alorma.apploteria.domain.bean.Game;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import rx.Observable;
 
-public class SqlGamesDataSource implements GamesDatasource, AddGameDatasource {
+public class SqlGamesDataSource implements GamesDatasource, AddGameDatasource, ResourceCleanUp {
 
   private final Inquiry database;
 
@@ -36,5 +37,10 @@ public class SqlGamesDataSource implements GamesDatasource, AddGameDatasource {
         return Observable.empty();
       }
     });
+  }
+
+  @Override
+  public void clean() {
+    database.destroyInstance();
   }
 }

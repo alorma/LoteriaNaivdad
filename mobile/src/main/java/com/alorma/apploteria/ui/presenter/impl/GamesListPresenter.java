@@ -20,9 +20,10 @@ public class GamesListPresenter extends BaseRxPresenter<Void, List<Game>, View<L
   }
 
   public void addGame(Game game) {
-    Observable<List<Game>> listObservable =
-        addGameUseCase.execute(game)
-            .flatMap(aBoolean -> aBoolean ? getItemsUseCase.execute(null) : Observable.error(new Exception()));
+    Observable<List<Game>> observable = getItemsUseCase.execute(null);
+    Observable<List<Game>> fallbackObservable = Observable.error(new Exception());
+    Observable<List<Game>> listObservable = addGameUseCase.execute(game)
+        .flatMap(aBoolean -> aBoolean ? observable : fallbackObservable);
 
     subscribe(listObservable);
   }

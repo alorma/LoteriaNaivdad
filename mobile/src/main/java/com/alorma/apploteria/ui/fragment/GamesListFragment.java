@@ -10,8 +10,8 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import com.afollestad.inquiry.Inquiry;
 import com.alorma.apploteria.R;
+import com.alorma.apploteria.domain.ResourceCleanUp;
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.bean.GamePart;
 import com.alorma.apploteria.domain.bean.GamePlace;
@@ -24,18 +24,16 @@ import javax.inject.Inject;
 
 public class GamesListFragment extends BaseFragment implements com.alorma.apploteria.ui.presenter.View<List<Game>> {
 
+  @Inject ResourceCleanUp resourceCleanUp;
   @Inject GamesListPresenter gamesListPresenter;
 
   @BindView(R.id.text) TextView textView;
-  private Inquiry database;
 
   @Override
   protected void injectComponents(ApplicationComponent applicationComponent) {
     super.injectComponents(applicationComponent);
 
-    database = Inquiry.newInstance(getContext().getApplicationContext(), "GAMES").build();
-
-    applicationComponent.plus(new GamesModule(database)).inject(this);
+    applicationComponent.plus(new GamesModule()).inject(this);
   }
 
   @Nullable
@@ -105,7 +103,7 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
     super.onPause();
 
     if (getActivity() != null && getActivity().isFinishing()) {
-      database.destroyInstance();
+      resourceCleanUp.clean();
     }
   }
 

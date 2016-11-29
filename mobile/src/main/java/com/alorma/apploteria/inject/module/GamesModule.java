@@ -1,9 +1,9 @@
 package com.alorma.apploteria.inject.module;
 
+import android.content.Context;
 import com.afollestad.inquiry.Inquiry;
+import com.alorma.apploteria.domain.ResourceCleanUp;
 import com.alorma.apploteria.domain.bean.Game;
-import com.alorma.apploteria.domain.datasource.AddGameDatasource;
-import com.alorma.apploteria.domain.datasource.GamesDatasource;
 import com.alorma.apploteria.domain.datasource.SqlGamesDataSource;
 import com.alorma.apploteria.domain.repository.AddGameRepository;
 import com.alorma.apploteria.domain.repository.GetGamesRepository;
@@ -22,37 +22,38 @@ import rx.Scheduler;
 
 @Module public class GamesModule {
 
-  private GamesDatasource gamesDatasource;
-  private AddGameDatasource addGameDatasource;
+  public GamesModule() {
 
-  public GamesModule(Inquiry database) {
-    SqlGamesDataSource dataSource = new SqlGamesDataSource(database);
-    gamesDatasource = dataSource;
-    addGameDatasource = dataSource;
   }
 
   @Provides
   @PerActivity
-  GamesDatasource getGamesDatasource() {
-    return gamesDatasource;
+  public Inquiry getDatabase(Context context) {
+    return Inquiry.newInstance(context, "GAMES").build();
   }
 
   @Provides
   @PerActivity
-  AddGameDatasource getAddGameDatasource() {
-    return addGameDatasource;
+  SqlGamesDataSource provideDatabase(Inquiry database) {
+    return new SqlGamesDataSource(database);
   }
 
   @Provides
   @PerActivity
-  Repository<Void, List<Game>> getGamesRepository(GamesDatasource datasource) {
-    return new GetGamesRepository(datasource);
+  ResourceCleanUp getCleanUp(SqlGamesDataSource dataSource) {
+    return dataSource;
   }
 
   @Provides
   @PerActivity
-  Repository<Game, Boolean> getAddGameRepository(AddGameDatasource datasource) {
-    return new AddGameRepository(datasource);
+  Repository<Void, List<Game>> getGamesRepository(SqlGamesDataSource dataSource) {
+    return new GetGamesRepository(dataSource);
+  }
+
+  @Provides
+  @PerActivity
+  Repository<Game, Boolean> getAddGameRepository(SqlGamesDataSource dataSource) {
+    return new AddGameRepository(dataSource);
   }
 
   @Provides
