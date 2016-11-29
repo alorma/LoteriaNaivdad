@@ -1,8 +1,20 @@
 package com.alorma.apploteria.ui.presenter.impl;
 
 import com.alorma.apploteria.domain.bean.Game;
+import com.alorma.apploteria.domain.bean.GamePart;
+import com.alorma.apploteria.domain.bean.GamePlace;
+import com.alorma.apploteria.domain.datasource.AddGameDataSource;
+import com.alorma.apploteria.domain.datasource.GetGamesDataSource;
+import com.alorma.apploteria.domain.datasource.RemoveGamesDataSource;
+import com.alorma.apploteria.domain.repository.AddGameRepository;
+import com.alorma.apploteria.domain.repository.CommpletableRepository;
+import com.alorma.apploteria.domain.repository.GetGamesRepository;
+import com.alorma.apploteria.domain.repository.RemoveAllGamesRepository;
+import com.alorma.apploteria.domain.repository.Repository;
 import com.alorma.apploteria.domain.usecase.CompletableUseCase;
 import com.alorma.apploteria.domain.usecase.UseCase;
+import com.alorma.apploteria.domain.usecase.impl.AddGameUseCase;
+import com.alorma.apploteria.domain.usecase.impl.GetGamesUseCase;
 import com.alorma.apploteria.ui.presenter.View;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +22,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import rx.Completable;
 import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,8 +53,7 @@ public class GamesListPresenterTest {
   public void setup() {
     MockitoAnnotations.initMocks(this);
 
-    gamesListPresenter = new GamesListPresenter(getItemsUseCase, addGamesUseCase,
-        removeGamesUseCase, IO_SCHEDULER, MAIN_SCHEDULER);
+    gamesListPresenter = new GamesListPresenter(getItemsUseCase, addGamesUseCase, removeGamesUseCase, IO_SCHEDULER, MAIN_SCHEDULER);
 
     gamesListPresenter.attachView(view);
   }
@@ -101,17 +114,102 @@ public class GamesListPresenterTest {
 
   @Test
   public void shouldCallShowError_whenUseCaseThrowsError() {
-    givenErrotGetUseCase();
+    givenErrorGetUseCase();
 
     gamesListPresenter.execute(null);
 
     verify(view).showError(any(Throwable.class));
   }
 
+  @Test
+  public void shouldReturnData_whenAddNewGame() {
+    GamesListPresenter gamesListPresenter = givenInMemoryPresenter();
+
+    gamesListPresenter.addGame(getNewGame());
+
+    verify(view).onDataReceived(anyListOf(Game.class));
+  }
+
+  @Test
+  public void shouldReturnEMpty_whenRemoveAllGames() {
+    GamesListPresenter gamesListPresenter = givenInMemoryPresenter();
+
+    gamesListPresenter.addGame(getNewGame());
+    gamesListPresenter.addGame(getNewGame());
+    gamesListPresenter.addGame(getNewGame());
+    gamesListPresenter.addGame(getNewGame());
+    gamesListPresenter.addGame(getNewGame());
+
+
+    gamesListPresenter.removeAllGames();
+
+    verify(view).onDataEmpty();
+  }
+
+  private GamesListPresenter givenInMemoryPresenter() {
+    InMemoryDataSource ds = new InMemoryDataSource();
+
+    Repository<Void, List<Game>> getGamesRepository = new GetGamesRepository(ds);
+    UseCase<Void, List<Game>> getAllItemsUseCase = new GetGamesUseCase(getGamesRepository);
+
+    Repository<Game, Boolean> addGamesRepository = new AddGameRepository(ds);
+    UseCase<Game, Boolean> addNewItemUseCase = new AddGameUseCase(addGamesRepository);
+
+    CommpletableRepository removeAllItemsRepository = new RemoveAllGamesRepository(ds);
+    CompletableUseCase removeAllGamesUseCase = new CompletableUseCase(removeAllItemsRepository);
+    GamesListPresenter presenter =
+        new GamesListPresenter(getAllItemsUseCase, addNewItemUseCase, removeAllGamesUseCase, IO_SCHEDULER, MAIN_SCHEDULER);
+
+    presenter.attachView(view);
+
+    return presenter;
+  }
+
+  private class InMemoryDataSource implements AddGameDataSource, GetGamesDataSource, RemoveGamesDataSource {
+
+    private List<Game> games;
+
+    public InMemoryDataSource() {
+      this.games = new ArrayList<>();
+    }
+
+    @Override
+    public Observable<Boolean> addGame(Game game) {
+      return Observable.just(this.games.add(game));
+    }
+
+    @Override
+    public Observable<List<Game>> getList() {
+      return Observable.just(games);
+    }
+
+    @Override
+    public Completable removeAllGames() {
+      return Completable.fromAction(() -> this.games.clear());
+    }
+  }
+
+  private Game getNewGame() {
+    GamePlace place = mock(GamePlace.class);
+    GamePart part = mock(GamePart.class);
+
+    when(part.getPlace()).thenReturn(place);
+
+    Game game = mock(Game.class);
+
+    List<GamePart> parts = new ArrayList<>();
+    parts.add(part);
+
+    when(game.getParts()).thenReturn(parts);
+
+    return game;
+  }
+
   private void givenEmptyGetUseCase() {
     when(getItemsUseCase.execute(any())).thenReturn(Observable.empty());
   }
-  private void givenErrotGetUseCase() {
+
+  private void givenErrorGetUseCase() {
     when(getItemsUseCase.execute(any())).thenReturn(Observable.error(new Exception()));
   }
 
