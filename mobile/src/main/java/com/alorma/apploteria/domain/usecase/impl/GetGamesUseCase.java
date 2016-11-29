@@ -1,7 +1,8 @@
-package com.alorma.apploteria.domain.usecase;
+package com.alorma.apploteria.domain.usecase.impl;
 
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.repository.Repository;
+import com.alorma.apploteria.domain.usecase.UseCase;
 import java.util.List;
 import rx.Observable;
 

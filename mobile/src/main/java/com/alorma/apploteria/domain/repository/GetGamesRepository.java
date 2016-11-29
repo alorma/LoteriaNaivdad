@@ -1,14 +1,14 @@
 package com.alorma.apploteria.domain.repository;
 
 import com.alorma.apploteria.domain.bean.Game;
-import com.alorma.apploteria.domain.datasource.GamesDatasource;
+import com.alorma.apploteria.domain.datasource.GetGamesDataSource;
 import java.util.List;
 import rx.Observable;
 
 public class GetGamesRepository implements Repository<Void, List<Game>> {
-  private GamesDatasource datasource;
+  private GetGamesDataSource datasource;
 
-  public GetGamesRepository(GamesDatasource datasource) {
+  public GetGamesRepository(GetGamesDataSource datasource) {
     this.datasource = datasource;
   }
 

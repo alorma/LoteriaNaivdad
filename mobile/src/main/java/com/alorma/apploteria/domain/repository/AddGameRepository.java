@@ -1,13 +1,13 @@
 package com.alorma.apploteria.domain.repository;
 
 import com.alorma.apploteria.domain.bean.Game;
-import com.alorma.apploteria.domain.datasource.AddGameDatasource;
+import com.alorma.apploteria.domain.datasource.AddGameDataSource;
 import rx.Observable;
 
 public class AddGameRepository implements Repository<Game, Boolean> {
-  private AddGameDatasource datasource;
+  private AddGameDataSource datasource;
 
-  public AddGameRepository(AddGameDatasource datasource) {
+  public AddGameRepository(AddGameDataSource datasource) {
     this.datasource = datasource;
   }
 

@@ -65,9 +65,14 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
     super.onStop();
   }
 
-  @OnClick(R.id.button)
+  @OnClick(R.id.button_add_item)
   public void onButtonClick() {
     gamesListPresenter.addGame(generateRandomGame());
+  }
+
+  @OnClick(R.id.button_remove_all)
+  public void removeAllItems() {
+    gamesListPresenter.removeAllGames();
   }
 
   private Game generateRandomGame() {

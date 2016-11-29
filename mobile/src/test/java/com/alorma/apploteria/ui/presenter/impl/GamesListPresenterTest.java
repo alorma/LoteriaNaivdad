@@ -1,6 +1,7 @@
 package com.alorma.apploteria.ui.presenter.impl;
 
 import com.alorma.apploteria.domain.bean.Game;
+import com.alorma.apploteria.domain.usecase.CompletableUseCase;
 import com.alorma.apploteria.domain.usecase.UseCase;
 import com.alorma.apploteria.ui.presenter.View;
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ public class GamesListPresenterTest {
 
   @Mock UseCase<Void, List<Game>> getItemsUseCase;
   @Mock UseCase<Game, Boolean> addGamesUseCase;
+  @Mock CompletableUseCase removeGamesUseCase;
+
   @Mock View<List<Game>> view;
 
   private GamesListPresenter gamesListPresenter;
@@ -36,7 +39,9 @@ public class GamesListPresenterTest {
   public void setup() {
     MockitoAnnotations.initMocks(this);
 
-    gamesListPresenter = new GamesListPresenter(getItemsUseCase, addGamesUseCase, IO_SCHEDULER, MAIN_SCHEDULER);
+    gamesListPresenter = new GamesListPresenter(getItemsUseCase, addGamesUseCase,
+        removeGamesUseCase, IO_SCHEDULER, MAIN_SCHEDULER);
+
     gamesListPresenter.attachView(view);
   }
 
