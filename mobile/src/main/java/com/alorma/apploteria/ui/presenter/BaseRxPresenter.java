@@ -1,12 +1,15 @@
 package com.alorma.apploteria.ui.presenter;
 
-import android.support.annotation.Nullable;
+import com.alorma.apploteria.domain.usecase.SingleUseCase;
 import com.alorma.apploteria.domain.usecase.UseCase;
 import com.alorma.apploteria.inject.named.MainScheduler;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Scheduler;
+import rx.Single;
 import rx.Subscriber;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * Represents base RxJava presenter.
@@ -16,15 +19,21 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
 
   protected final Scheduler mainScheduler;
   protected final Scheduler ioScheduler;
-  private UseCase<REQUEST, RESPONSE> useCase;
-  protected Subscriber<RESPONSE> subscriber;
-  private Integer page;
+  private UseCase<REQUEST, RESPONSE> observableUseCase;
+  private SingleUseCase<RESPONSE> singleUseCase;
+  protected CompositeSubscription subscription;
   private RESPONSE defaultIfEmpty;
 
-  public BaseRxPresenter(@MainScheduler Scheduler mainScheduler, Scheduler ioScheduler, UseCase<REQUEST, RESPONSE> useCase) {
+  public BaseRxPresenter(@MainScheduler Scheduler mainScheduler, Scheduler ioScheduler, UseCase<REQUEST, RESPONSE> observableUseCase) {
     this.mainScheduler = mainScheduler;
     this.ioScheduler = ioScheduler;
-    this.useCase = useCase;
+    this.observableUseCase = observableUseCase;
+  }
+
+  public BaseRxPresenter(@MainScheduler Scheduler mainScheduler, Scheduler ioScheduler, SingleUseCase<RESPONSE> singleUseCase) {
+    this.mainScheduler = mainScheduler;
+    this.ioScheduler = ioScheduler;
+    this.singleUseCase = singleUseCase;
   }
 
   /**
@@ -35,11 +44,15 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
   public void execute(REQUEST request) {
     if (!isViewAttached()) return;
 
-    subscribe(useCase.execute(request));
+    if (observableUseCase != null) {
+      subscribe(observableUseCase.execute(request));
+    } else if (singleUseCase != null) {
+      subscribe(singleUseCase.execute());
+    }
   }
 
   /**
-   * Creates internal subscriber and attaches it to observable argument.
+   * Creates internal subscription and attaches it to observable argument.
    *
    * @param observable the object to subscribe
    */
@@ -50,7 +63,7 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
 
     unsubscribe();
 
-    subscriber = new Subscriber<RESPONSE>() {
+    Subscriber<RESPONSE> subscriber = new Subscriber<RESPONSE>() {
       @Override
       public void onCompleted() {
         BaseRxPresenter.this.onCompleted();
@@ -71,19 +84,70 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
         .observeOn(mainScheduler)
         .switchIfEmpty(defaultIfEmpty != null ? Observable.just(defaultIfEmpty) : Observable.empty())
         .timeout(20, TimeUnit.SECONDS)
-        .retry(3)
         .subscribe(subscriber);
+
+    getSubscription().add(subscriber);
+  }
+
+  private CompositeSubscription getSubscription() {
+    if (subscription == null) {
+      subscription = new CompositeSubscription();
+    }
+    return subscription;
   }
 
   /**
-   * Unsubscribes internal subscriber and set it to null.
+   * Creates internal subscription and attaches it to single argument.
+   *
+   * @param single the object to subscribe
+   */
+  protected void subscribe(Single<RESPONSE> single) {
+    if (!isViewAttached()) return;
+
+    getView().showLoading();
+
+    unsubscribe();
+
+    Subscriber<RESPONSE> subscriber = new Subscriber<RESPONSE>() {
+      @Override
+      public void onCompleted() {
+        BaseRxPresenter.this.onCompleted();
+      }
+
+      @Override
+      public void onError(Throwable e) {
+        BaseRxPresenter.this.onError(e);
+      }
+
+      @Override
+      public void onNext(RESPONSE response) {
+        BaseRxPresenter.this.onNext(response);
+      }
+    };
+
+    single.toObservable()
+        .switchIfEmpty(defaultIfEmpty != null ? Observable.just(defaultIfEmpty) : Observable.empty())
+        .onErrorResumeNext(throwable -> {
+          if (throwable instanceof NoSuchElementException) {
+            return defaultIfEmpty != null ? Observable.just(defaultIfEmpty) : Observable.empty();
+          }
+          return Observable.error(throwable);
+        })
+        .subscribeOn(ioScheduler)
+        .observeOn(mainScheduler)
+        .timeout(20, TimeUnit.SECONDS)
+        .subscribe(subscriber);
+
+    getSubscription().add(subscriber);
+  }
+
+  /**
+   * Unsubscribes internal subscription and set it to null.
    */
   protected void unsubscribe() {
-    if (subscriber != null && !subscriber.isUnsubscribed()) {
-      subscriber.unsubscribe();
+    if (subscription != null && !subscription.isUnsubscribed()) {
+      subscription.clear();
     }
-
-    subscriber = null;
   }
 
   protected void onCompleted() {
@@ -123,11 +187,6 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
       getView().hideLoading();
     }
     unsubscribe();
-  }
-
-  @Nullable
-  public Integer getPage() {
-    return page;
   }
 
   public void setDefaultIfEmpty(RESPONSE defaultIfEmpty) {

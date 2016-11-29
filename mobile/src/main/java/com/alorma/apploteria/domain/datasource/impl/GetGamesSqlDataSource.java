@@ -6,7 +6,7 @@ import com.alorma.apploteria.domain.datasource.GetGamesDataSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import rx.Observable;
+import rx.Single;
 
 public class GetGamesSqlDataSource implements GetGamesDataSource {
 
@@ -17,13 +17,14 @@ public class GetGamesSqlDataSource implements GetGamesDataSource {
   }
 
   @Override
-  public Observable<List<Game>> getList() {
-    return Observable.fromCallable(() -> database.select(Game.class).all()).flatMap(games -> {
-      if (games != null) {
-        return Observable.just(games);
+  public Single<List<Game>> getList() {
+    return Single.fromCallable(() -> {
+      Game[] all = database.select(Game.class).all();
+      if (all != null) {
+        return Arrays.asList(all);
       } else {
-        return Observable.empty();
+        return new ArrayList<Game>();
       }
-    }).map(Arrays::asList).switchIfEmpty(Observable.just(new ArrayList<>()));
+    });
   }
 }

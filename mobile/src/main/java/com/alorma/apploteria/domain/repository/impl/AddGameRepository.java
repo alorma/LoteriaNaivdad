@@ -1,7 +1,8 @@
-package com.alorma.apploteria.domain.repository;
+package com.alorma.apploteria.domain.repository.impl;
 
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.datasource.AddGameDataSource;
+import com.alorma.apploteria.domain.repository.CompletableRepository;
 import rx.Completable;
 import rx.Observable;
 

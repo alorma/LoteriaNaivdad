@@ -1,11 +1,12 @@
-package com.alorma.apploteria.domain.repository;
+package com.alorma.apploteria.domain.repository.impl;
 
 import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.datasource.GetGamesDataSource;
+import com.alorma.apploteria.domain.repository.SingleRepository;
 import java.util.List;
-import rx.Observable;
+import rx.Single;
 
-public class GetGamesRepository implements Repository<Void, List<Game>> {
+public class GetGamesRepository implements SingleRepository<List<Game>> {
   private GetGamesDataSource datasource;
 
   public GetGamesRepository(GetGamesDataSource datasource) {
@@ -13,7 +14,7 @@ public class GetGamesRepository implements Repository<Void, List<Game>> {
   }
 
   @Override
-  public Observable<List<Game>> execute(Void aVoid) {
+  public Single<List<Game>> execute() {
     return datasource.getList();
   }
 }

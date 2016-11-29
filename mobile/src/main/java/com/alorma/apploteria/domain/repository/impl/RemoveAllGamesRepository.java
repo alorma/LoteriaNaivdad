@@ -1,6 +1,7 @@
-package com.alorma.apploteria.domain.repository;
+package com.alorma.apploteria.domain.repository.impl;
 
 import com.alorma.apploteria.domain.datasource.RemoveGamesDataSource;
+import com.alorma.apploteria.domain.repository.CompletableRepository;
 import rx.Completable;
 
 public class RemoveAllGamesRepository implements CompletableRepository<Void> {

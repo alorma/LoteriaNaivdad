@@ -10,14 +10,13 @@ import com.alorma.apploteria.domain.datasource.RemoveGamesDataSource;
 import com.alorma.apploteria.domain.datasource.impl.AddGameSqlDataSource;
 import com.alorma.apploteria.domain.datasource.impl.GetGamesSqlDataSource;
 import com.alorma.apploteria.domain.datasource.impl.RemoveAllGamesSqlDataSource;
-import com.alorma.apploteria.domain.repository.AddGameRepository;
 import com.alorma.apploteria.domain.repository.CompletableRepository;
-import com.alorma.apploteria.domain.repository.GetGamesRepository;
-import com.alorma.apploteria.domain.repository.RemoveAllGamesRepository;
-import com.alorma.apploteria.domain.repository.Repository;
+import com.alorma.apploteria.domain.repository.SingleRepository;
+import com.alorma.apploteria.domain.repository.impl.AddGameRepository;
+import com.alorma.apploteria.domain.repository.impl.GetGamesRepository;
+import com.alorma.apploteria.domain.repository.impl.RemoveAllGamesRepository;
 import com.alorma.apploteria.domain.usecase.CompletableUseCase;
-import com.alorma.apploteria.domain.usecase.UseCase;
-import com.alorma.apploteria.domain.usecase.impl.GetGamesUseCase;
+import com.alorma.apploteria.domain.usecase.SingleUseCase;
 import com.alorma.apploteria.inject.named.IOScheduler;
 import com.alorma.apploteria.inject.named.MainScheduler;
 import com.alorma.apploteria.inject.named.RemoveItems;
@@ -66,7 +65,7 @@ import rx.Scheduler;
 
   @Provides
   @PerActivity
-  Repository<Void, List<Game>> getGamesRepository(GetGamesDataSource dataSource) {
+  SingleRepository<List<Game>> getGamesRepository(GetGamesDataSource dataSource) {
     return new GetGamesRepository(dataSource);
   }
 
@@ -85,8 +84,8 @@ import rx.Scheduler;
 
   @Provides
   @PerActivity
-  UseCase<Void, List<Game>> provideGetGamesUseCase(Repository<Void, List<Game>> repository) {
-    return new GetGamesUseCase(repository);
+  SingleUseCase<List<Game>> provideGetGamesUseCase(SingleRepository<List<Game>> repository) {
+    return new SingleUseCase<>(repository);
   }
 
   @Provides
@@ -103,7 +102,7 @@ import rx.Scheduler;
 
   @Provides
   @PerActivity
-  GamesListPresenter getGamesListPresenter(UseCase<Void, List<Game>> getGamesUseCase, CompletableUseCase<Game> addGameUseCase,
+  GamesListPresenter getGamesListPresenter(SingleUseCase<List<Game>> getGamesUseCase, CompletableUseCase<Game> addGameUseCase,
       CompletableUseCase<Void> removeAllGamesUseCase, @IOScheduler Scheduler ioScheduler, @MainScheduler Scheduler mainScheduler) {
     return new GamesListPresenter(getGamesUseCase, addGameUseCase, removeAllGamesUseCase, ioScheduler, mainScheduler);
   }
