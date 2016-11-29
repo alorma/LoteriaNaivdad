@@ -25,8 +25,6 @@ import rx.Scheduler;
   @ComputationScheduler
   Scheduler provideComputationScheduler();
 
-  GamesComponent plus(GamesModule gamesModule);
-
   void inject(BaseActivity baseActivity);
 
   void inject(BaseFragment baseFragment);

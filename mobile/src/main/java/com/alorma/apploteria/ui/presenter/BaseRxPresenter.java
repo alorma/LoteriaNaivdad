@@ -19,9 +19,9 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
   private UseCase<REQUEST, RESPONSE> useCase;
   protected Subscriber<RESPONSE> subscriber;
   private Integer page;
+  private RESPONSE defaultIfEmpty;
 
-  public BaseRxPresenter(@MainScheduler Scheduler mainScheduler, Scheduler ioScheduler,
-      UseCase<REQUEST, RESPONSE> useCase) {
+  public BaseRxPresenter(@MainScheduler Scheduler mainScheduler, Scheduler ioScheduler, UseCase<REQUEST, RESPONSE> useCase) {
     this.mainScheduler = mainScheduler;
     this.ioScheduler = ioScheduler;
     this.useCase = useCase;
@@ -40,8 +40,8 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
 
   /**
    * Creates internal subscriber and attaches it to observable argument.
-   *  @param observable the object to subscribe
    *
+   * @param observable the object to subscribe
    */
   protected void subscribe(Observable<RESPONSE> observable) {
     if (!isViewAttached()) return;
@@ -67,7 +67,11 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
       }
     };
 
-    observable.subscribeOn(ioScheduler).observeOn(mainScheduler).timeout(20, TimeUnit.SECONDS).retry(3)
+    observable.subscribeOn(ioScheduler)
+        .observeOn(mainScheduler)
+        .switchIfEmpty(defaultIfEmpty != null ? Observable.just(defaultIfEmpty) : Observable.empty())
+        .timeout(20, TimeUnit.SECONDS)
+        .retry(3)
         .subscribe(subscriber);
   }
 
@@ -100,8 +104,16 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
 
   protected void onNext(RESPONSE response) {
     if (isViewAttached()) {
-      getView().onDataReceived(response);
+      if (responseIsEmpty(response)) {
+        getView().onDataEmpty();
+      } else {
+        getView().onDataReceived(response);
+      }
     }
+  }
+
+  protected boolean responseIsEmpty(RESPONSE response) {
+    return false;
   }
 
   @Override
@@ -116,5 +128,9 @@ public abstract class BaseRxPresenter<REQUEST, RESPONSE, VIEW extends View<RESPO
   @Nullable
   public Integer getPage() {
     return page;
+  }
+
+  public void setDefaultIfEmpty(RESPONSE defaultIfEmpty) {
+    this.defaultIfEmpty = defaultIfEmpty;
   }
 }

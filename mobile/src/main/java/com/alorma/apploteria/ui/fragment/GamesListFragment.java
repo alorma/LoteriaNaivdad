@@ -16,6 +16,7 @@ import com.alorma.apploteria.domain.bean.Game;
 import com.alorma.apploteria.domain.bean.GamePart;
 import com.alorma.apploteria.domain.bean.GamePlace;
 import com.alorma.apploteria.inject.component.ApplicationComponent;
+import com.alorma.apploteria.inject.component.DaggerGamesComponent;
 import com.alorma.apploteria.inject.module.GamesModule;
 import com.alorma.apploteria.ui.presenter.impl.GamesListPresenter;
 import java.util.ArrayList;
@@ -33,7 +34,8 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
   protected void injectComponents(ApplicationComponent applicationComponent) {
     super.injectComponents(applicationComponent);
 
-    applicationComponent.plus(new GamesModule()).inject(this);
+    DaggerGamesComponent.builder().applicationComponent(applicationComponent)
+        .gamesModule(new GamesModule()).build().inject(this);
   }
 
   @Nullable
@@ -114,6 +116,11 @@ public class GamesListFragment extends BaseFragment implements com.alorma.applot
     } else {
       textView.setText("Data received is null");
     }
+  }
+
+  @Override
+  public void onDataEmpty() {
+    textView.setText("NO DATA");
   }
 
   @Override

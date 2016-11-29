@@ -8,35 +8,42 @@ import android.support.annotation.UiThread;
  */
 public interface View<MODEL> {
 
-    /**
-     * Indicates that some data is loaded.
-     * This method should be called on UI thread.
-     */
-    @UiThread
-    void showLoading();
+  /**
+   * Indicates that some data is loaded.
+   * This method should be called on UI thread.
+   */
+  @UiThread
+  void showLoading();
 
-    /**
-     * Indicates that some data loading is finished.
-     * This method should be called on UI thread.
-     */
-    @UiThread
-    void hideLoading();
+  /**
+   * Indicates that some data loading is finished.
+   * This method should be called on UI thread.
+   */
+  @UiThread
+  void hideLoading();
 
-    /**
-     * Indicates that data is received and should be processed.
-     * This method should be called on UI thread.
-     *  @param data some data
-     *
-     */
-    @UiThread
-    void onDataReceived(MODEL data);
+  /**
+   * Indicates that data is received and should be processed.
+   * This method should be called on UI thread.
+   *
+   * @param data some data
+   */
+  @UiThread
+  void onDataReceived(MODEL data);
 
-    /**
-     * Indicates that some error happens when receiving data.
-     * This method should be called on UI thread.
-     *
-     * @param throwable error
-     */
-    @UiThread
-    void showError(Throwable throwable);
+  /**
+   * Indicates that data is empty
+   * This method should be called on UI thread.
+   */
+  @UiThread
+  void onDataEmpty();
+
+  /**
+   * Indicates that some error happens when receiving data.
+   * This method should be called on UI thread.
+   *
+   * @param throwable error
+   */
+  @UiThread
+  void showError(Throwable throwable);
 }
